@@ -1,7 +1,10 @@
-use axum::response::Json;
-use axum::http::StatusCode;
+use axum::http::header::AUTHORIZATION;
+use axum::middleware::Next;
+use axum::response::Response;
+use axum::{extract::Request, response::Json};
+use axum::http::{HeaderMap, StatusCode};
 use chrono::Local;
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::{encode, decode, DecodingKey, EncodingKey, Header, Validation};
 
 use crate::model::{Credentials, Claims, Tokens};
 
@@ -34,4 +37,35 @@ pub async fn login(Json(credentials): Json<Credentials>) -> Result<Json<Tokens>,
     }
 
     return Err((StatusCode::BAD_REQUEST, String::from("Invalid username/password.")));
+}
+
+pub async fn has_token(headers: HeaderMap, request: Request, next: Next) -> Result<Response, (StatusCode, String)> {
+    match get_token(&headers) {
+        Some(token) if token_is_valid(&token) => {
+            let response = next.run(request).await;
+            Ok(response)
+        }
+        _ => {
+            Err((StatusCode::UNAUTHORIZED, String::from("Access denied.")))
+        }
+    }
+}
+
+fn get_token(headers: &HeaderMap) -> Option<String> {
+    let token = headers.get(AUTHORIZATION)
+        .and_then(|auth_header| auth_header.to_str().ok())
+        .and_then(|auth_value| {
+            if auth_value.starts_with("Bearer") {
+                Some(auth_value[7..].to_owned())
+            } else {
+                None
+            }
+        }
+    );
+
+    token
+}
+
+fn token_is_valid(token: &String) -> bool {
+    decode::<Claims>(&token, &DecodingKey::from_secret("secret".as_ref()), &Validation::default()).is_ok()
 }

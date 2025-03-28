@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
 use api::init_logging;
-use axum::{routing::{get, post}, Router};
+use axum::{middleware, routing::{get, post}, Router};
 
 mod auth;
 mod model;
@@ -13,6 +13,8 @@ async fn main() {
     init_logging();
 
     let app = Router::new()
+        .route("/protected", get(protected))
+        .route_layer(middleware::from_fn(auth::has_token))
         .route("/", get(index))
         .route("/login", post(auth::login));
 
@@ -26,4 +28,8 @@ async fn main() {
 
 async fn index() -> &'static str {
     "Status: online."
+}
+
+async fn protected() -> &'static str {
+    "Access granted."
 }
