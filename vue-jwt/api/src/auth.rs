@@ -36,7 +36,7 @@ pub async fn login(Json(credentials): Json<Credentials>) -> Result<Json<Tokens>,
         return Ok(Json(token));
     }
 
-    return Err((StatusCode::BAD_REQUEST, String::from("Invalid username/password.")));
+    return Err((StatusCode::FORBIDDEN, String::from("Invalid username/password.")));
 }
 
 pub async fn has_token(headers: HeaderMap, request: Request, next: Next) -> Result<Response, (StatusCode, String)> {
