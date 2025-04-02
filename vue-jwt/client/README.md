@@ -7,3 +7,8 @@ $ yarn create vuetify
 $ yarn add axios
 ```
 
+## Project execution
+
+```bash
+$ yarn dev
+```

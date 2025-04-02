@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import axios from 'axios';
-import {ref} from "vue";
+import { ref } from "vue";
+import router from "@/router";
+import { login } from "@/utils/auth";
 
 const username = ref("");
 const password = ref("");
 
-function login() {
+function handleLogin() {
   axios
     .post("/api/login", { "username": username.value, "password" : password.value})
     .then((res) => {
-      console.log("Token: ", res.data.access_token);
-      alert("Welcome, admin!");
+      login(JSON.stringify(res.data));
+      router.push({ path: "/protected"});
     })
     .catch((error) => {
       console.log("Error: ", error);
@@ -27,6 +29,11 @@ function login() {
       alert("Could not login: unknown error.");
     });
 }
+
+function back() {
+  router.push({ path: "/"});
+}
+
 </script>
 
 <template>
@@ -61,12 +68,22 @@ function login() {
           </v-col>
 
           <v-col
-            cols="12"
+            cols="6"
             class="text-center"
           >
             <v-btn
               text="Login"
-              @click="login"
+              @click="handleLogin"
+            />
+          </v-col>
+
+          <v-col
+            cols="6"
+            class="text-center"
+          >
+            <v-btn
+              text="Back"
+              @click="back"
             />
           </v-col>
         </v-row>

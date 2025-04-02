@@ -7,6 +7,7 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router/auto'
 import { routes } from 'vue-router/auto-routes'
+import { isAuthenticated } from "@/utils/auth";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,5 +32,15 @@ router.onError((err, to) => {
 router.isReady().then(() => {
   localStorage.removeItem('vuetify:dynamic-reload')
 })
+
+router.beforeEach((to) => {
+  if (to.name === '/' || to.name === '/login')
+    return true;
+
+  if (to.name === '/protected' && isAuthenticated())
+      return true;
+
+  return { path : "/login" };
+});
 
 export default router

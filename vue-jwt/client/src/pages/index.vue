@@ -1,8 +1,7 @@
 <template>
-  <Login />
+  <Index />
 </template>
 
 <script lang="ts" setup>
-  //
-import Login from "@/components/Login.vue";
+import Index from "@/components/Index.vue";
 </script>
