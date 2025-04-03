@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import router from "@/router";
+import axios from "axios";
+import {onMounted, ref} from "vue";
 import {logout} from "@/utils/auth";
+
+const serverTime = ref("");
 
 function back() {
   router.push({path : "/"});
@@ -10,6 +14,26 @@ function handleLogout() {
   logout();
   router.push({ path: "/" });
 }
+
+onMounted(() => {
+  axios
+    .get("/api/protected")
+    .then((res) => {
+      if (res && res.status === 200 && res.data)
+        serverTime.value = res.data;
+    })
+    .catch((error) => {
+      if (error.status === 401) {
+        logout();
+        router.push({ path: "/login" });
+        alert("Token expired, please login again.");
+        return;
+      }
+
+      console.log("Error: ", error);
+      alert("Error retrieving server time.");
+    });
+});
 </script>
 
 <template>
@@ -21,6 +45,10 @@ function handleLogout() {
       <div class="text-center">
         <div class="text-h2 font-weight-bold">
           Only authenticated users should access this page...
+        </div>
+
+        <div>
+          Server time is: {{ serverTime }}.
         </div>
       </div>
 

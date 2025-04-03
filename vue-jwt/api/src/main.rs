@@ -1,5 +1,6 @@
 use std::net::SocketAddr;
 
+use chrono::Local;
 use tokio::net::TcpListener;
 
 use api::init_logging;
@@ -14,6 +15,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/protected", get(protected))
+        .route("/refresh", post(auth::refresh))
         .route_layer(middleware::from_fn(auth::has_token))
         .route("/", get(index))
         .route("/login", post(auth::login));
@@ -30,6 +32,6 @@ async fn index() -> &'static str {
     "Status: online."
 }
 
-async fn protected() -> &'static str {
-    "Access granted."
+async fn protected() -> String {
+    Local::now().to_rfc3339()
 }
